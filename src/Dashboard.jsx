@@ -7,17 +7,14 @@ function Dashboard() {
   }, []);
 
   async function fetchMatrics() {
-    // const { data, error } 
     const response = await supabase
-      .from ('sales_deals')
+      .from('sales_deals')
       .select(
         `
         name,
-        value
+        value.sum()
         `,
       )
-      .order('value', {ascending: false}) 
-      .limit(1);
     console.log(response);
   }
 
