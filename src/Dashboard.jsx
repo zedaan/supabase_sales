@@ -1,13 +1,16 @@
 import supabase from "./supabase-client";
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function Dashboard() {
+  const [metrics, setMetrics] =  useState([]);
+
   useEffect(() => {
     fetchMatrics();
   }, []);
 
   async function fetchMatrics() {
-    const response = await supabase
+    try {
+      const {error, data} = await supabase
       .from('sales_deals')
       .select(
         `
@@ -15,9 +18,18 @@ function Dashboard() {
         value.sum()
         `,
       )
-    console.log(response);
-  }
+      if (error) {
+        throw error;
+      }
+      console.log(metrics, "data of metrics 1");
+      setMetrics(data);
+      
+    } catch (error) {
+      console.error('Error fetching metrics:', error, metrics);
+    }
 
+  }
+  
   return (
     <div className="dashboard-wrapper">
       <div className="chart-container">
