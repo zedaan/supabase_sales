@@ -7,6 +7,27 @@ function Dashboard() {
 
   useEffect(() => {
     fetchMatrics();
+
+    const channel = supabase
+      .channel('deal-changes')
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'sales_deals' 
+        },
+        (payload) => {
+          // Action
+          fetchMetrics();
+          
+        })
+      .subscribe();
+
+    // Clean up subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function fetchMatrics() {
