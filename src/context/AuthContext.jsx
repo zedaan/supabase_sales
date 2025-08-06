@@ -3,44 +3,60 @@ import supabase from "../supabase-client";
 
 const AuthContext = createContext();
 
-export const AuthContextProvider = ({children}) => {
-// Auth functions signin, signout, logout
+export const AuthContextProvider = ({ children }) => {
+  // Auth functions signin, signout, logout
 
-// Session state (user info, signin satus)
-const [session, setSession] = useState("Manager is logged In");
+  // Session state (user info, signin satus)
+  const [session, setSession] = useState("Manager is logged In");
 
-useEffect(() => {
+  useEffect(() => {
     async function getInitialSession() {
-        try {
-            const { data, error } = await supabase.auth.getSession();
-            if (error) {
-                throw error;
-            }
-            console.log(data.session);
-            setSession(data.session);
-        } catch (error) {
-            console.error(error.message);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          throw error;
         }
+        console.log(data.session);
+        setSession(data.session);
+      } catch (error) {
+        console.error(error.message);
+      }
     }
     getInitialSession();
     //2) Listen for changes in auth state (.onAuthStateChange())
     supabase.auth.onAuthStateChange((_event, session) => {
-        setSession(session);
-        console.log('Session changed:', session);
-      })
+      setSession(session);
+      console.log("Session changed:", session);
+    });
+  }, []);
 
-}, []);
+  //Auth functions (signin, signup, logout)
+  //Sign in (success, data, error)
 
-return (
-    <AuthContext.Provider value={{ session }}>
-        {children}
-    </AuthContext.Provider>
-    )
-}
+  const signInUser = async (email, password) => {
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email.toLowerCase(),
+            password: password,
+        })
+        //handle supabase error explicitly
+      if (error) {
+        console.error('Supabase sign-in error:', error.message);
+        return { success: false, error: error.message};
+      }
+      console.log('Supabase sign-in success:', data);
+      return { success: true, data };
+    } catch (error) {
+        //Unexpected error
+      console.error('Unexpected error during sign-in:', error.message);
+      return { success: false, error: 'An unexpected error occurred. Please try again.' };
+    }
+  };
+  return (
+    <AuthContext.Provider value={{ session, signInUser }}>{children}</AuthContext.Provider>
+  );
+};
 
 export const useAuth = () => {
-    return useContext(AuthContext);
-}
-
-
-
+  return useContext(AuthContext);
+};
