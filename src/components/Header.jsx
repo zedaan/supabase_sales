@@ -1,10 +1,9 @@
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 function Header() {
-  const {signOut } = useAuth();
+  const {signOut, session } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
 
@@ -16,7 +15,7 @@ function Header() {
       setError(error.message);
     }
     if (success) {
-      navigate('/');
+      navigate('/signin');
     }
   }
 
@@ -28,6 +27,15 @@ function Header() {
           role="navigation"
           aria-label="User account navigation"
         >
+          <h2>
+            <span className="sr-only">Logged in as:</span>
+            {session?.user?.email}
+          </h2>
+          {error && (
+            <div role="role" className="error-message" id="signout-error">
+              {error}
+            </div>
+          )}
 
           <button 
             onClick={handleSignOut}
